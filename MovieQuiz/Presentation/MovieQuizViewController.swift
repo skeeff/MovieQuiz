@@ -8,12 +8,12 @@ final class MovieQuizViewController: UIViewController {
             show(quiz: viewModel)
         super.viewDidLoad()
     }
-    struct QuizQuestion{
+    private struct QuizQuestion{
         let image: String
         let text: String
         let correctAnswer: Bool
     }
-    struct QuizResultsViewModel {
+    private struct QuizResultsViewModel {
       let title: String
       let text: String
       let buttonText: String
@@ -80,7 +80,7 @@ final class MovieQuizViewController: UIViewController {
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
     
-    struct QuizStepViewModel{
+    private struct QuizStepViewModel{
         let image: UIImage
         let question: String
         let questionNumber: String
