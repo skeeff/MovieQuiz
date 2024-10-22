@@ -82,7 +82,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         textLabel.text = step.question
         counterLabel.text = step.questionNumber
         imageView.layer.cornerRadius = 20
+ sprint_05
         
+
+ main
     }
     private func showAnswerResult(isCorrect: Bool){
         if isCorrect{
@@ -97,6 +100,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             guard let self = self else { return }
             self.imageView.layer.borderWidth = 0
             self.imageView.layer.borderColor = UIColor.clear.cgColor
+        
             self.showNextQuestionOrResults()
         }
     }
