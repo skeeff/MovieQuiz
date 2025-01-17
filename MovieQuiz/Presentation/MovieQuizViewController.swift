@@ -17,7 +17,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var currentQuestion: QuizQuestion?
     private var alertPresenter: AlertPresenterProtocol?
     private var statisticService: StatisticServiceProtocol?
-
+    
     
     @IBAction private func yesButtonClicked(_ sender: Any) {
         guard let currentQuestion = currentQuestion else {
@@ -38,6 +38,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        showLoadingIndicator()
+        
         
         let questionFactory = QuestionFactory(moviesLoader: MoviesLoader())
         questionFactory.setup(delegate: self)
@@ -51,7 +53,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         statisticService.delegate = self
         self.statisticService = statisticService
         
-//        statisticService = StatisticService()
         questionFactory.loadData()
         questionFactory.requestNextQuestion()
         
@@ -64,7 +65,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         guard let question = question else{
             return
         }
-    
+        
         currentQuestion = question
         let viewModel = convert(model: question)
         
@@ -172,7 +173,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     
     
-
+    
 }
 
 /*

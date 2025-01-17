@@ -7,7 +7,11 @@
 
 import UIKit
 
-struct NetworkClient{
+protocol NetworkRouting{
+    func fetch(url: URL, handler: @escaping (Result<Data,Error>) -> Void)
+}
+
+struct NetworkClient: NetworkRouting{
     
     private enum NetworkError: Error{
         case codeError
@@ -22,9 +26,9 @@ struct NetworkClient{
             }
             
             if let response = response as? HTTPURLResponse,
-            response.statusCode < 200 || response.statusCode >= 300 {
-                            handler(.failure(NetworkError.codeError))
-                            return
+               response.statusCode < 200 || response.statusCode >= 300 {
+                handler(.failure(NetworkError.codeError))
+                return
             }
             
             guard let data = data else { return }
