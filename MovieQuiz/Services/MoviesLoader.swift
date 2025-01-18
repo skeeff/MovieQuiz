@@ -12,6 +12,7 @@ protocol MoviesLoading {
 }
 
 struct MoviesLoader: MoviesLoading{
+    
     private let networkClient: NetworkRouting
     
     init(networkClient: NetworkRouting = NetworkClient()) {
