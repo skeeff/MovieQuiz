@@ -38,6 +38,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        showLoadingIndicator()
         
         let questionFactory = QuestionFactory(moviesLoader: MoviesLoader())
         questionFactory.setup(delegate: self)
