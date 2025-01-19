@@ -7,15 +7,24 @@
 
 import UIKit
 
-final class MovieQuizPresenter {
+final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     let questionsAmount: Int = 10
     private var currentQuestionIndex: Int = 0
-    private var correctAnswers = 0
+    var correctAnswers = 0
     
     private var questionFactory: QuestionFactoryProtocol?
     var currentQuestion: QuizQuestion?
     weak var viewController: MovieQuizViewController?
+    
+    init(viewController: MovieQuizViewController) {
+        self.viewController = viewController
+        
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader())
+        questionFactory?.setup(delegate: self)
+        questionFactory?.loadData()
+        viewController.showLoadingIndicator()
+    }
     
     func yesButtonClicked() {
         didAnswer(isYes: true)
@@ -27,24 +36,35 @@ final class MovieQuizPresenter {
     
     func didAnswer(isYes: Bool) {
         guard let currentQuestion = currentQuestion else {
-                    return
-                }
-                
-                let givenAnswer = isYes
-                
-                viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+            return
+        }
+        
+        let givenAnswer = isYes
+        let isCorrect = givenAnswer == currentQuestion.correctAnswer
+        //didAnswer(isCorrect: isCorrect)
+        
+        viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        //showNextQuestionOrResults()
+    }
+    
+    func didAnswer(isCorrect: Bool){
+        if (isCorrect) {
+            correctAnswers += 1 }
     }
     
     func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
     }
     
-    func resetQuestionIndex() {
+    func restartGame() {
         currentQuestionIndex = 0
+        correctAnswers = 0
+        self.questionFactory?.requestNextQuestion()
     }
     
     func switchToNextQuestion() {
         currentQuestionIndex += 1
+        questionFactory?.requestNextQuestion()
     }
     
     func convert(model: QuizQuestion) -> QuizStepViewModel {
@@ -62,8 +82,7 @@ final class MovieQuizPresenter {
         
         currentQuestion = question
         let viewModel = convert(model: question)
-        
-        DispatchQueue.main.async{[weak self] in
+        DispatchQueue.main.async { [weak self] in
             self?.viewController?.show(quiz: viewModel)
         }
     }
@@ -72,23 +91,23 @@ final class MovieQuizPresenter {
         
         if self.isLastQuestion() {
             
-//            let date = Date()
-//            
-//            statisticService?.store(correct: correctAnswers, total: self.questionsAmount, date: date)
-//            
-//            let alertText = """
-//                            Ваш результат: \(correctAnswers)/10
-//                            Количество сыграных квизов: \(statisticService?.gamesCount ?? 0)
-//                            Рекорд: \(statisticService?.bestGame.correct ?? 0)/10 (\(statisticService?.bestGame.date.dateTimeString ?? "")
-//                            Средняя точность: \(String(format:"%.2f", statisticService?.totalAccuracy ?? ""))%
-//                            
-//                            """
-// 
+            //            let date = Date()
+            //
+            //            statisticService?.store(correct: correctAnswers, total: self.questionsAmount, date: date)
+            //
+            //            let alertText = """
+            //                            Ваш результат: \(correctAnswers)/10
+            //                            Количество сыграных квизов: \(statisticService?.gamesCount ?? 0)
+            //                            Рекорд: \(statisticService?.bestGame.correct ?? 0)/10 (\(statisticService?.bestGame.date.dateTimeString ?? "")
+            //                            Средняя точность: \(String(format:"%.2f", statisticService?.totalAccuracy ?? ""))%
+            //
+            //                            """
+            //
             let alertText =  "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
             
             let completion = {[weak self] in
                 guard let self else { return }
-                self.resetQuestionIndex()
+                self.restartGame()
                 correctAnswers = 0
                 self.questionFactory?.requestNextQuestion()
             }
@@ -101,10 +120,24 @@ final class MovieQuizPresenter {
         }else{
             self.switchToNextQuestion()
             
-            questionFactory?.requestNextQuestion()
+//            questionFactory?.requestNextQuestion()
             
         }
         
     }
     
+    
+    func didLoadDataFromServer() {
+        viewController?.hideLoadingIndicatior()
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        let message = error.localizedDescription
+        viewController?.showNetworkError(message: message)
+    }
+    
+    func loadData(){
+        questionFactory?.loadData()
+    }
 }

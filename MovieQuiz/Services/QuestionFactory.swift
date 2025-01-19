@@ -58,6 +58,7 @@ final class QuestionFactory: QuestionFactoryProtocol{
     
     private weak var delegate: QuestionFactoryDelegate?
     
+    
     func setup (delegate: QuestionFactoryDelegate){
         self.delegate = delegate
     }
