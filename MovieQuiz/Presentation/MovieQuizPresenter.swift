@@ -12,6 +12,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     let questionsAmount: Int = 10
     private var currentQuestionIndex: Int = 0
     var correctAnswers = 0
+    private let statisticService: StatisticServiceProtocol!
     
     private var questionFactory: QuestionFactoryProtocol?
     var currentQuestion: QuizQuestion?
@@ -19,6 +20,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     init(viewController: MovieQuizViewController) {
         self.viewController = viewController
+        
+        self.statisticService = StatisticService()
         
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader())
         questionFactory?.setup(delegate: self)
@@ -40,7 +43,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
         
         let givenAnswer = isYes
-        let isCorrect = givenAnswer == currentQuestion.correctAnswer
+        //let isCorrect = givenAnswer == currentQuestion.correctAnswer
         //didAnswer(isCorrect: isCorrect)
         
         viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
@@ -87,23 +90,23 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
     }
     
-    private func showNextQuestionOrResults() {
+    func showNextQuestionOrResults() {
         
         if self.isLastQuestion() {
             
-            //            let date = Date()
-            //
-            //            statisticService?.store(correct: correctAnswers, total: self.questionsAmount, date: date)
-            //
-            //            let alertText = """
-            //                            Ваш результат: \(correctAnswers)/10
-            //                            Количество сыграных квизов: \(statisticService?.gamesCount ?? 0)
-            //                            Рекорд: \(statisticService?.bestGame.correct ?? 0)/10 (\(statisticService?.bestGame.date.dateTimeString ?? "")
-            //                            Средняя точность: \(String(format:"%.2f", statisticService?.totalAccuracy ?? ""))%
-            //
-            //                            """
-            //
-            let alertText =  "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
+            let date = Date()
+            
+            statisticService?.store(correct: correctAnswers, total: self.questionsAmount, date: date)
+            
+            let alertText = """
+                                        Ваш результат: \(correctAnswers)/10
+                                        Количество сыграных квизов: \(statisticService?.gamesCount ?? 0)
+                                        Рекорд: \(statisticService?.bestGame.correct ?? 0)/10 (\(statisticService?.bestGame.date.dateTimeString ?? "")
+                                        Средняя точность: \(String(format:"%.2f", statisticService?.totalAccuracy ?? ""))%
+                                        
+                                        """
+            
+            //let alertText =  "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
             
             let completion = {[weak self] in
                 guard let self else { return }
@@ -120,7 +123,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }else{
             self.switchToNextQuestion()
             
-//            questionFactory?.requestNextQuestion()
+            //            questionFactory?.requestNextQuestion()
             
         }
         
@@ -140,4 +143,26 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     func loadData(){
         questionFactory?.loadData()
     }
+    
+    func makeResultsMessage() -> String {
+        
+        let date = Date()
+        
+        statisticService.store(correct: correctAnswers, total: questionsAmount, date: date)
+        
+        let bestGame = statisticService.bestGame
+        
+        let totalPlaysCountLine = "Количество сыгранных квизов: \(statisticService.gamesCount)"
+        let currentGameResultLine = "Ваш результат: \(correctAnswers)\\\(questionsAmount)"
+        let bestGameInfoLine = "Рекорд: \(bestGame.correct)\\\(bestGame.total)"
+        + " (\(bestGame.date.dateTimeString))"
+        let averageAccuracyLine = "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
+        
+        let resultMessage = [
+            currentGameResultLine, totalPlaysCountLine, bestGameInfoLine, averageAccuracyLine
+        ].joined(separator: "\n")
+        
+        return resultMessage
+    }
 }
+

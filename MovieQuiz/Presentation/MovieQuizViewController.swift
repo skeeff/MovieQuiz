@@ -9,20 +9,20 @@ final class MovieQuizViewController: UIViewController {
     @IBOutlet private var counterLabel: UILabel!
     @IBOutlet private var activityIndicator: UIActivityIndicatorView!
     
-
+    
     private var presenter : MovieQuizPresenter!
     
     var alertPresenter: AlertPresenterProtocol?
-    private var statisticService: StatisticServiceProtocol?
+    //private var statisticService: StatisticServiceProtocol?
     
     
     @IBAction private func yesButtonClicked(_ sender: Any) {
         //presenter.currentQuestion = presenter.currentQuestion
-                presenter.yesButtonClicked()
+        presenter.yesButtonClicked()
     }
     @IBAction private func noButtonClicked(_ sender: Any) {
         //presenter.currentQuestion = presenter.currentQuestion
-                presenter.noButtonClicked()
+        presenter.noButtonClicked()
     }
     
     
@@ -33,17 +33,17 @@ final class MovieQuizViewController: UIViewController {
         
         presenter = MovieQuizPresenter(viewController: self)
         
-//        let questionFactory = QuestionFactory(moviesLoader: MoviesLoader())
-//        questionFactory.setup(delegate: self)
-//        self.questionFactory = questionFactory
-//        
+        //        let questionFactory = QuestionFactory(moviesLoader: MoviesLoader())
+        //        questionFactory.setup(delegate: self)
+        //        self.questionFactory = questionFactory
+        //        
         let alertPresenter = AlertPresenter()
         alertPresenter.delegate = self
         self.alertPresenter = alertPresenter
         
-        let statisticService = StatisticService()
-        statisticService.delegate = self
-        self.statisticService = statisticService
+        //        let statisticService = StatisticService()
+        //        statisticService.delegate = self
+        //        self.statisticService = statisticService
         
         presenter.loadData()
         presenter.restartGame()
@@ -53,18 +53,18 @@ final class MovieQuizViewController: UIViewController {
     
     // MARK: - QuestionFactoryDelegate
     
-//    func didRecieveNextQuestion(question: QuizQuestion?) {
-//        presenter.didRecieveNextQuestion(question: question)
-//    }
+    //    func didRecieveNextQuestion(question: QuizQuestion?) {
+    //        presenter.didRecieveNextQuestion(question: question)
+    //    }
     
-//    func didLoadDataFromServer() {
-//        activityIndicator.isHidden = true
-//        questionFactory?.requestNextQuestion()
-//    }
+    //    func didLoadDataFromServer() {
+    //        activityIndicator.isHidden = true
+    //        questionFactory?.requestNextQuestion()
+    //    }
     
-//    func didFailToLoadData(with error: Error) {
-//        showNetworkError(message: error.localizedDescription)
-//    }
+    //    func didFailToLoadData(with error: Error) {
+    //        showNetworkError(message: error.localizedDescription)
+    //    }
     
     func show(quiz step: QuizStepViewModel){
         imageView.image = step.image
@@ -74,36 +74,52 @@ final class MovieQuizViewController: UIViewController {
     }
     
     private func show(quiz result: QuizResultsViewModel) {
-        let date = Date()
-        var message = result.text
-        if let statisticService = statisticService {
-            statisticService.store(correct: presenter.correctAnswers, total: presenter.questionsAmount, date: date)
-
-            let bestGame = statisticService.bestGame
-
-            let totalPlaysCountLine = "Количество сыгранных квизов: \(statisticService.gamesCount)"
-            let currentGameResultLine = "Ваш результат: \(presenter.correctAnswers)\\\(presenter.questionsAmount)"
-            let bestGameInfoLine = "Рекорд: \(bestGame.correct)\\\(bestGame.total)"
-            + " (\(bestGame.date.dateTimeString))"
-            let averageAccuracyLine = "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
-
-            let resultMessage = [
-                currentGameResultLine, totalPlaysCountLine, bestGameInfoLine, averageAccuracyLine
-            ].joined(separator: "\n")
-
-            message = resultMessage
-        }
-
-        let model = AlertModel(title: result.title, message: message, buttonText: result.buttonText) { [weak self] in
+        let message = presenter.makeResultsMessage()
+        
+        let alert = UIAlertController(
+            title: result.title,
+            message: message,
+            preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
             guard let self = self else { return }
-
-            presenter.restartGame()
-            presenter.correctAnswers = 0
-
-//            self.questionFactory?.requestNextQuestion()
+            
+            self.presenter.restartGame()
         }
-
-        alertPresenter?.showAlert(result: model)
+        
+        alert.addAction(action)
+        
+        self.present(alert, animated: true, completion: nil)
+        //        let date = Date()
+        //        let message = presenter.
+        //        if let statisticService = statisticService {
+        //            statisticService.store(correct: presenter.correctAnswers, total: presenter.questionsAmount, date: date)
+        //
+        //            let bestGame = statisticService.bestGame
+        //
+        //            let totalPlaysCountLine = "Количество сыгранных квизов: \(statisticService.gamesCount)"
+        //            let currentGameResultLine = "Ваш результат: \(presenter.correctAnswers)\\\(presenter.questionsAmount)"
+        //            let bestGameInfoLine = "Рекорд: \(bestGame.correct)\\\(bestGame.total)"
+        //            + " (\(bestGame.date.dateTimeString))"
+        //            let averageAccuracyLine = "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
+        //
+        //            let resultMessage = [
+        //                currentGameResultLine, totalPlaysCountLine, bestGameInfoLine, averageAccuracyLine
+        //            ].joined(separator: "\n")
+        //
+        //            message = resultMessage
+        //        }
+        //
+        //        let model = AlertModel(title: result.title, message: message, buttonText: result.buttonText) { [weak self] in
+        //            guard let self = self else { return }
+        //
+        //            presenter.restartGame()
+        //            presenter.correctAnswers = 0
+        //
+        ////            self.questionFactory?.requestNextQuestion()
+        //        }
+        //
+        //        alertPresenter?.showAlert(result: model)
     }
     
     func showLoadingIndicator(){
@@ -120,7 +136,7 @@ final class MovieQuizViewController: UIViewController {
             self.presenter.restartGame()
             self.presenter.correctAnswers = 0
             
-//            self.questionFactory?.requestNextQuestion()
+            //            self.questionFactory?.requestNextQuestion()
         }
         
         alertPresenter?.showAlert(result: model)
@@ -138,7 +154,7 @@ final class MovieQuizViewController: UIViewController {
             guard let self = self else { return }
             self.imageView.layer.borderWidth = 0
             self.imageView.layer.borderColor = UIColor.clear.cgColor
-            self.showNextQuestionOrResults()
+            presenter.showNextQuestionOrResults()
         }
     }
     
@@ -147,45 +163,47 @@ final class MovieQuizViewController: UIViewController {
         
     }
     
-    private func showNextQuestionOrResults() {
-        
-        if presenter.isLastQuestion() {
-            
-            let date = Date()
-            
-            statisticService?.store(correct: presenter.correctAnswers, total: presenter.questionsAmount, date: date)
-            
-            let alertText = """
-                            Ваш результат: \(presenter.correctAnswers)/10
-                            Количество сыграных квизов: \(statisticService?.gamesCount ?? 0)
-                            Рекорд: \(statisticService?.bestGame.correct ?? 0)/10 (\(statisticService?.bestGame.date.dateTimeString ?? "")
-                            Средняя точность: \(String(format:"%.2f", statisticService?.totalAccuracy ?? ""))%
-                            
-                            """
-            
-            let completion = {[weak self] in
-                guard let self else { return }
-                self.presenter.restartGame()
-                presenter.correctAnswers = 0
-            }
-            
-            let viewModel = AlertModel(
-                title: "Раунд завершен",
-                message: alertText,
-                buttonText: "Играть снова",
-                completion: completion)
-            alertPresenter?.showAlert(result: viewModel)
-        }else{
-            presenter.switchToNextQuestion() 
-            
-            
-        }
-        
-    }
-    
-    
-    
-    
+    //private func showNextQuestionOrResults() {
+        //presenter.showNextQuestionOrResults()
+        //
+        //        if presenter.isLastQuestion() {
+        //            
+        //            let date = Date()
+        //            
+        //            statisticService?.store(correct: presenter.correctAnswers, total: presenter.questionsAmount, date: date)
+        //            
+        //            let alertText = """
+        //                            Ваш результат: \(presenter.correctAnswers)/10
+        //                            Количество сыграных квизов: \(statisticService?.gamesCount ?? 0)
+        //                            Рекорд: \(statisticService?.bestGame.correct ?? 0)/10 (\(statisticService?.bestGame.date.dateTimeString ?? "")
+        //                            Средняя точность: \(String(format:"%.2f", statisticService?.totalAccuracy ?? ""))%
+        //                            
+        //                            """
+        //            
+        //            let completion = {[weak self] in
+        //                guard let self else { return }
+        //                self.presenter.restartGame()
+        //                presenter.correctAnswers = 0
+        //            }
+        //            
+        //            let viewModel = AlertModel(
+        //                title: "Раунд завершен",
+        //                message: alertText,
+        //                buttonText: "Играть снова",
+        //                completion: completion)
+        //            alertPresenter?.showAlert(result: viewModel)
+        //        }else{
+        //            presenter.switchToNextQuestion() 
+        //            
+        //            
+        //        }
+        //        
+        //    }
+        //    
+        //    
+        //    
+        //    
+   // }
 }
 
 /*
