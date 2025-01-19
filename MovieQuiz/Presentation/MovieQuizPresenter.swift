@@ -43,11 +43,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
         
         let givenAnswer = isYes
-        //let isCorrect = givenAnswer == currentQuestion.correctAnswer
-        //didAnswer(isCorrect: isCorrect)
         
-        viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
-        //showNextQuestionOrResults()
+        self.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
     func didAnswer(isCorrect: Bool){
@@ -106,7 +103,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
                                         
                                         """
             
-            //let alertText =  "Вы ответили на \(correctAnswers) из 10, попробуйте ещё раз!"
             
             let completion = {[weak self] in
                 guard let self else { return }
@@ -120,10 +116,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
                 buttonText: "Играть снова",
                 completion: completion)
             viewController?.alertPresenter?.showAlert(result: viewModel)
-        }else{
+        } else {
             self.switchToNextQuestion()
-            
-            //            questionFactory?.requestNextQuestion()
             
         }
         
@@ -140,7 +134,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         viewController?.showNetworkError(message: message)
     }
     
-    func loadData(){
+    func loadData() {
         questionFactory?.loadData()
     }
     
@@ -163,6 +157,18 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         ].joined(separator: "\n")
         
         return resultMessage
+    }
+    
+    func showAnswerResult(isCorrect: Bool){
+        didAnswer(isCorrect: isCorrect)
+        
+        viewController?.highlightImageBorder(isCorrect: isCorrect)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                    guard let self = self else { return }
+                    viewController?.hideHighlight()
+                    self.showNextQuestionOrResults()
+                }
     }
 }
 
