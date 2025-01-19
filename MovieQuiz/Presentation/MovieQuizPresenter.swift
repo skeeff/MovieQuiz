@@ -9,14 +9,16 @@ import UIKit
 
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
-    let questionsAmount: Int = 10
-    private var currentQuestionIndex: Int = 0
-    var correctAnswers = 0
     private let statisticService: StatisticServiceProtocol!
-    
     private var questionFactory: QuestionFactoryProtocol?
-    var currentQuestion: QuizQuestion?
-    weak var viewController: MovieQuizViewController?
+    private weak var viewController: MovieQuizViewController?
+    
+    
+    private var currentQuestion: QuizQuestion?
+    private let questionsAmount: Int = 10
+    private var currentQuestionIndex: Int = 0
+    private var correctAnswers = 0
+    
     
     init(viewController: MovieQuizViewController) {
         self.viewController = viewController
@@ -44,7 +46,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         
         let givenAnswer = isYes
         
-        self.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        self.proceedWithAnswer(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
     func didAnswer(isCorrect: Bool){
@@ -59,7 +61,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     func restartGame() {
         currentQuestionIndex = 0
         correctAnswers = 0
-        self.questionFactory?.requestNextQuestion()
+        questionFactory?.requestNextQuestion()
     }
     
     func switchToNextQuestion() {
@@ -87,7 +89,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
     }
     
-    func showNextQuestionOrResults() {
+    func proceedToNextQuestionOrResults() {
         
         if self.isLastQuestion() {
             
@@ -159,16 +161,16 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         return resultMessage
     }
     
-    func showAnswerResult(isCorrect: Bool){
+    func proceedWithAnswer(isCorrect: Bool){
         didAnswer(isCorrect: isCorrect)
         
         viewController?.highlightImageBorder(isCorrect: isCorrect)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-                    guard let self = self else { return }
-                    viewController?.hideHighlight()
-                    self.showNextQuestionOrResults()
-                }
+            guard let self = self else { return }
+            viewController?.hideHighlight()
+            self.proceedToNextQuestionOrResults()
+        }
     }
 }
 
