@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController {
+final class MovieQuizViewController: UIViewController, MovieQuizViewControllerProtocol {
     
     // MARK: - Lifecycle
     
@@ -46,7 +46,7 @@ final class MovieQuizViewController: UIViewController {
         imageView.layer.cornerRadius = 20
     }
     
-    private func show(quiz result: QuizResultsViewModel) {
+    func show(quiz result: QuizResultsViewModel) {
         let message = presenter.makeResultsMessage()
         
         let alert = UIAlertController(
@@ -66,12 +66,17 @@ final class MovieQuizViewController: UIViewController {
         
     }
     
-    func showLoadingIndicator(){
+    
+    func showLoadingIndicator() {
         activityIndicator.isHidden = false
         activityIndicator.startAnimating()
     }
     
-    func showNetworkError(message: String){
+    func hideLoadingIndicator() {
+        activityIndicator.isHidden = true
+    }
+    
+    func showNetworkError(message: String) {
         activityIndicator.isHidden = true
         
         let model = AlertModel(title: "Ошибка", message: "Ошибка сети", buttonText: "Попробовать снова") { [weak self] in
@@ -98,7 +103,7 @@ final class MovieQuizViewController: UIViewController {
         self.imageView.layer.borderColor = UIColor.clear.cgColor
     }
     
-    func hideLoadingIndicatior(){
+    func hideLoadingIndicatior() {
         activityIndicator.isHidden = true
         
     }
